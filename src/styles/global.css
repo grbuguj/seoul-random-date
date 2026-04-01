@@ -1,19 +1,39 @@
-/* 전역 스타일 - 다크 테마 */
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0a0f;
-  --surface: #14141c;
-  --card: #1c1c28;
-  --border: #2a2a40;
-  --text: #f0f0f8;
-  --muted: #7070a0;
-  --radius: 16px;
+  --bg:        #0e1218;
+  --surface:   #161d26;
+  --card:      #1e2730;
+  --border:    #2a3545;
+  --text:      #f0f4f8;
+  --muted:     #6a8098;
+  --pink:      #ff7eb3;
+  --pink-soft: #ffb3d1;
+  --green:     #4caf82;
+  --blue:      #4dabf7;
+  --radius:    16px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Noto Sans KR', sans-serif;
-  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  /* 봄 그라디언트 배경 */
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(255,126,179,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(77,171,247,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(76,175,130,0.04) 0%, transparent 60%);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
 }
