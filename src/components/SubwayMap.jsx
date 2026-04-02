@@ -1,37 +1,49 @@
 import { LINES } from '../data/stations';
-import { LINE_COORDS } from '../data/mapCoords';
+import { LINE_COORDS, project } from '../data/mapCoords';
 
-// ─── 한강 실제 S커브 경로 ─────────────────────────────────────────
-const HAN_FILL =
-  'M 82,416 C 155,411 228,416 298,424 C 348,429 380,433 418,432 ' +
-  'C 472,430 538,426 614,422 C 688,418 745,415 878,408 ' +
-  'L 878,452 C 745,459 688,462 614,464 C 538,466 472,468 418,466 ' +
-  'C 380,465 348,463 298,457 C 228,450 155,445 82,450 Z';
-const HAN_NORTH =
-  'M 82,416 C 155,411 228,416 298,424 C 348,429 380,433 418,432 ' +
-  'C 472,430 538,426 614,422 C 688,418 745,415 878,408';
-const HAN_SOUTH =
-  'M 82,450 C 155,445 228,450 298,457 C 348,463 380,465 418,466 ' +
-  'C 472,468 538,466 614,464 C 688,462 745,459 878,452';
+// ─── 실제 지리 기반 한강 경로 ────────────────────────────────────
+// 북안 control points (위경도 → SVG 좌표 계산)
+const R = (lat, lng) => { const p = project(lat, lng); return `${p.x},${p.y}`; };
 
-// 여의도 섬
-const YEOUIDO_ISLAND =
-  'M 337,434 C 348,429 370,429 385,434 C 394,438 396,447 389,453 ' +
-  'C 378,459 352,459 340,453 C 333,448 332,438 337,434 Z';
+// 북안 (west → east)
+const NORTH = [
+  [37.5670, 126.8150], [37.5580, 126.8420], [37.5460, 126.8750],
+  [37.5400, 126.9000], [37.5340, 126.9200], [37.5270, 126.9430],
+  [37.5220, 126.9680], [37.5200, 126.9920], [37.5200, 127.0120],
+  [37.5210, 127.0350], [37.5280, 127.0600], [37.5320, 127.0900],
+  [37.5360, 127.1250], [37.5430, 127.1600],
+];
+// 남안 (east → west)
+const SOUTH = [
+  [37.5300, 127.1600], [37.5230, 127.1250], [37.5190, 127.0900],
+  [37.5150, 127.0600], [37.5110, 127.0350], [37.5100, 127.0120],
+  [37.5080, 126.9920], [37.5060, 126.9680], [37.5140, 126.9430],
+  [37.5240, 126.9200], [37.5360, 126.9000], [37.5330, 126.8750],
+  [37.5460, 126.8420], [37.5560, 126.8150],
+];
 
-// 서울 시 경계
-const SEOUL_BOUNDARY =
-  'M 150,80 L 435,60 L 600,66 L 752,86 L 875,182 L 888,330 ' +
-  'L 868,484 L 815,604 L 675,644 L 500,650 L 345,640 ' +
-  'L 192,594 L 136,464 L 115,316 L 136,180 Z';
+const HAN_FILL = `M ${NORTH.map(([la,ln]) => R(la,ln)).join(' L ')} L ${SOUTH.map(([la,ln]) => R(la,ln)).join(' L ')} Z`;
+const HAN_NORTH_PATH = `M ${NORTH.map(([la,ln]) => R(la,ln)).join(' L ')}`;
+const HAN_SOUTH_PATH = `M ${SOUTH.map(([la,ln]) => R(la,ln)).join(' L ')}`;
 
-// 북한산/산 영역 (북쪽)
-const MOUNTAIN_N = 'M 300,62 C 380,55 480,58 560,65 C 610,68 640,78 600,85 C 560,92 460,90 380,88 C 330,86 285,78 300,62 Z';
+// 여의도 섬 (위경도 기반)
+const YEOUIDO = [
+  [37.5310, 126.9170], [37.5290, 126.9230], [37.5250, 126.9310],
+  [37.5210, 126.9370], [37.5195, 126.9340], [37.5210, 126.9230],
+  [37.5250, 126.9140], [37.5290, 126.9120],
+];
+const YEOUIDO_PATH = `M ${YEOUIDO.map(([la,ln]) => R(la,ln)).join(' L ')} Z`;
 
-// 청계산/남쪽 산
-const MOUNTAIN_S = 'M 520,635 C 560,630 620,632 660,638 C 680,641 688,648 660,650 C 630,652 575,652 540,648 C 522,645 515,638 520,635 Z';
+// 서울 시 경계 (위경도 기반, 러프)
+const BORDER_PTS = [
+  [37.7017, 127.0321], [37.6853, 127.1123], [37.6394, 127.1794],
+  [37.5600, 127.1862], [37.4775, 127.1797], [37.4265, 127.1028],
+  [37.4249, 126.9991], [37.4460, 126.8797], [37.5180, 126.7906],
+  [37.5956, 126.7904], [37.6556, 126.8325], [37.6989, 126.8873],
+];
+const SEOUL_PATH = `M ${BORDER_PTS.map(([la,ln]) => R(la,ln)).join(' L ')} Z`;
 
-// 노선별 연결 순서
+// 노선별 연결 순서 (segments per line)
 const LINE_SEGMENTS = {
   '1': [['서울역','시청','종각','종로3가','종로5가','동대문','동묘앞','신설동','제기동','청량리','회기','외대앞','신이문','석계','광운대','월계','녹천','창동','방학','도봉','도봉산']],
   '2': [
@@ -52,58 +64,12 @@ const LINE_SEGMENTS = {
   '9': [['개화','김포공항','공항시장','신방화','마곡나루','양천향교','가양','증미','등촌','염창','신목동','선유도','당산','국회의사당','여의도','샛강','노량진','노들','흑석','동작','구반포','신반포','고속터미널','사평','신논현','언주','선정릉','삼성중앙','봉은사','종합운동장','삼전','석촌고분','석촌','송파나루','한성백제','올림픽공원','둔촌오륜','중앙보훈병원']],
 };
 
-function getCoord(lineKey, name) {
-  return LINE_COORDS[lineKey]?.find(s => s.name === name);
+function getCoord(lk, name) {
+  return LINE_COORDS[lk]?.find(s => s.name === name);
 }
-function buildPoints(lineKey, seg) {
-  return seg.map(n => getCoord(lineKey, n)).filter(Boolean).map(s => `${s.x},${s.y}`).join(' ');
+function buildPoints(lk, seg) {
+  return seg.map(n => getCoord(lk, n)).filter(Boolean).map(s => `${s.x},${s.y}`).join(' ');
 }
-
-// 벚꽃 컴포넌트
-function Blossom({ x, y, size = 12, rotate = 0, opacity = 1 }) {
-  return (
-    <g transform={`translate(${x},${y}) rotate(${rotate})`} opacity={opacity} style={{ pointerEvents: 'none' }}>
-      {[0, 72, 144, 216, 288].map(a => {
-        const r = (a * Math.PI) / 180;
-        return (
-          <ellipse key={a}
-            cx={Math.sin(r) * size * 0.52}
-            cy={-Math.cos(r) * size * 0.52 - size * 0.35}
-            rx={size * 0.34} ry={size * 0.48}
-            transform={`rotate(${a})`}
-            fill="#ff8fc4"
-          />
-        );
-      })}
-      <circle r={size * 0.2} fill="#ffd966" />
-    </g>
-  );
-}
-
-// 벚꽃 위치 (한강변 + 공원 + 랜드마크)
-const BLOSSOMS = [
-  // 한강 북쪽 강변
-  { x: 258, y: 404, s: 13, r: 20,  o: 0.75 },
-  { x: 348, y: 420, s: 10, r: -15, o: 0.65 },
-  { x: 440, y: 420, s: 12, r: 30,  o: 0.70 },
-  { x: 560, y: 414, s: 10, r: -20, o: 0.60 },
-  { x: 680, y: 408, s: 11, r: 15,  o: 0.65 },
-  { x: 790, y: 404, s: 9,  r: -10, o: 0.55 },
-  // 한강 남쪽
-  { x: 320, y: 466, s: 11, r: 25,  o: 0.65 },
-  { x: 465, y: 472, s: 10, r: -18, o: 0.60 },
-  { x: 610, y: 468, s: 11, r: 12,  o: 0.65 },
-  { x: 740, y: 460, s: 9,  r: -25, o: 0.55 },
-  // 북쪽 산/공원
-  { x: 390, y: 270, s: 11, r: 18,  o: 0.55 },
-  { x: 162, y: 174, s: 12, r: -22, o: 0.60 },
-  { x: 550, y: 86,  s: 10, r: 10,  o: 0.50 },
-  { x: 670, y: 140, s: 11, r: -15, o: 0.55 },
-  // 남쪽 공원
-  { x: 760, y: 582, s: 10, r: 22,  o: 0.55 },
-  { x: 495, y: 612, s: 9,  r: -18, o: 0.50 },
-  { x: 310, y: 555, s: 9,  r: 10,  o: 0.48 },
-];
 
 export default function SubwayMap({ selectedLine, highlighted }) {
   const activeLine = selectedLine === 'rand' ? null : selectedLine;
@@ -113,75 +79,52 @@ export default function SubwayMap({ selectedLine, highlighted }) {
       viewBox="80 48 880 650"
       style={{ width: '100%', height: '100%', display: 'block' }}
       preserveAspectRatio="xMidYMid meet"
-      xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* 한강 그라디언트 */}
         <linearGradient id="riverG" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#7dc8f0" stopOpacity="0.55" />
-          <stop offset="45%"  stopColor="#5ab8ee" stopOpacity="0.70" />
-          <stop offset="100%" stopColor="#7dc8f0" stopOpacity="0.50" />
+          <stop offset="0%"   stopColor="#90caf9" stopOpacity="0.55" />
+          <stop offset="50%"  stopColor="#64b5f6" stopOpacity="0.70" />
+          <stop offset="100%" stopColor="#90caf9" stopOpacity="0.50" />
         </linearGradient>
-        {/* 지도 기본 배경 */}
-        <linearGradient id="mapBg" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor="#18263a" />
-          <stop offset="100%" stopColor="#0e1824" />
+        <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stopColor="#fff8fa" />
+          <stop offset="100%" stopColor="#fef0f4" />
         </linearGradient>
-        {/* 강북 색조 */}
-        <linearGradient id="gangbukG" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor="#223048" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#1a2840" stopOpacity="0.7" />
-        </linearGradient>
-        {/* 강남 색조 */}
-        <linearGradient id="gangnamG" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%"   stopColor="#1e2e44" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#162236" stopOpacity="0.5" />
-        </linearGradient>
-        {/* 역 글로우 */}
-        <filter id="stGlow" x="-150%" y="-150%" width="400%" height="400%">
-          <feGaussianBlur stdDeviation="5" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        {/* 한강 글로우 */}
-        <filter id="rivGlow" x="-5%" y="-50%" width="110%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="b"/>
+        <filter id="stGlow" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="4" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      {/* ── 지도 배경 ── */}
-      <rect x="60" y="44" width="900" height="668" fill="url(#mapBg)" />
+      {/* 배경 */}
+      <rect x="60" y="40" width="920" height="680" fill="url(#bgG)" />
 
-      {/* ── 서울 영역 ── */}
-      <path d={SEOUL_BOUNDARY} fill="url(#gangbukG)" />
-
-      {/* ── 강남 영역 (한강 이남, 약간 다른 톤) ── */}
-      <path
-        d={`M 82,450 C 155,445 228,450 298,457 C 348,463 380,465 418,466 C 472,468 538,466 614,464 C 688,462 745,459 878,452 L 878,655 L 82,655 Z`}
-        fill="url(#gangnamG)"
+      {/* 서울 시 경계 */}
+      <path d={SEOUL_PATH}
+        fill="rgba(252,232,240,0.55)"
+        stroke="rgba(232,87,138,0.18)"
+        strokeWidth="1.5"
       />
 
-      {/* ── 산/녹지 ── */}
-      <path d={MOUNTAIN_N} fill="rgba(45,90,50,0.28)" />
-      <path d={MOUNTAIN_S} fill="rgba(45,90,50,0.22)" />
-
-      {/* ── 한강 ── */}
-      <path d={HAN_FILL} fill="url(#riverG)" filter="url(#rivGlow)" />
-      {/* 강안선 */}
-      <path d={HAN_NORTH} fill="none" stroke="rgba(160,230,255,0.5)" strokeWidth="1.2" />
-      <path d={HAN_SOUTH} fill="none" stroke="rgba(120,210,255,0.35)" strokeWidth="0.8" />
+      {/* 한강 */}
+      <path d={HAN_FILL}       fill="url(#riverG)" />
+      <path d={HAN_NORTH_PATH} fill="none" stroke="rgba(100,181,246,0.60)" strokeWidth="1" />
+      <path d={HAN_SOUTH_PATH} fill="none" stroke="rgba(100,181,246,0.40)" strokeWidth="0.7" />
       {/* 여의도 */}
-      <path d={YEOUIDO_ISLAND} fill="rgba(55,115,55,0.30)" stroke="rgba(100,190,100,0.4)" strokeWidth="1" />
+      <path d={YEOUIDO_PATH}
+        fill="rgba(165,214,167,0.50)"
+        stroke="rgba(102,187,106,0.50)"
+        strokeWidth="1"
+      />
       {/* 한강 레이블 */}
-      <text x="175" y="435" fill="rgba(155,225,255,0.6)" fontSize="11"
-        fontFamily="'Noto Sans KR', sans-serif" fontWeight="700" letterSpacing="4">한 강</text>
+      {(() => { const p = project(37.521, 126.970); return (
+        <text x={p.x} y={p.y}
+          fill="rgba(100,181,246,0.80)" fontSize="10"
+          fontFamily="'마루 부리', 'MaruBuri', serif"
+          fontWeight="700" letterSpacing="4">한 강</text>
+      ); })()}
 
-      {/* ── 벚꽃 ── */}
-      {BLOSSOMS.map((b, i) => (
-        <Blossom key={i} x={b.x} y={b.y} size={b.s} rotate={b.r} opacity={b.o} />
-      ))}
-
-      {/* ── 노선 선 ── */}
+      {/* 노선 선 */}
       {Object.entries(LINE_SEGMENTS).map(([lk, segs]) => {
         const color  = LINES[lk].color;
         const active = !activeLine || activeLine === lk;
@@ -189,14 +132,14 @@ export default function SubwayMap({ selectedLine, highlighted }) {
           <polyline key={`${lk}-${si}`}
             points={buildPoints(lk, seg)}
             fill="none" stroke={color}
-            strokeWidth={active ? 2.8 : 1}
-            opacity={active ? 0.92 : 0.1}
+            strokeWidth={active ? 2.8 : 0.9}
+            opacity={active ? 0.92 : 0.10}
             strokeLinecap="round" strokeLinejoin="round"
           />
         ));
       })}
 
-      {/* ── 역 dot ── */}
+      {/* 역 dot */}
       {Object.entries(LINE_COORDS).map(([lk, stations]) => {
         const color  = LINES[lk].color;
         const active = !activeLine || activeLine === lk;
@@ -205,32 +148,37 @@ export default function SubwayMap({ selectedLine, highlighted }) {
           return (
             <circle key={`${lk}-${idx}`}
               cx={s.x} cy={s.y}
-              r={hit ? 10 : active ? 3.5 : 1.5}
-              fill={hit ? color : active ? '#cce8ff' : '#253545'}
-              stroke={hit ? '#fff' : active ? color : 'none'}
-              strokeWidth={hit ? 2.5 : active ? 0.8 : 0}
-              opacity={active ? 1 : 0.1}
-              style={hit ? { filter: `drop-shadow(0 0 10px ${color}) drop-shadow(0 0 22px ${color}88)` } : undefined}
+              r={hit ? 9 : active ? 3.2 : 1.6}
+              fill={hit ? color : active ? '#fff' : '#e8c4cc'}
+              stroke={hit ? '#fff' : active ? color : '#d4a0b0'}
+              strokeWidth={hit ? 2.5 : active ? 1.2 : 0.5}
+              opacity={active ? 1 : 0.22}
+              style={hit ? {
+                filter: `drop-shadow(0 0 8px ${color}bb) drop-shadow(0 0 18px ${color}66)`,
+              } : undefined}
             />
           );
         });
       })}
 
-      {/* ── 하이라이트 역명 ── */}
+      {/* 하이라이트 역명 레이블 */}
       {highlighted && (() => {
         const s     = LINE_COORDS[highlighted.lineKey]?.[highlighted.stationIdx];
         const color = LINES[highlighted.lineKey]?.color;
         if (!s) return null;
-        const lw  = s.name.length * 13 + 14;
-        const tx  = s.x > 820 ? s.x - lw - 8 : s.x + 14;
-        const ty  = s.y > 680 ? s.y - 18 : s.y - 14;
+        const lw = s.name.length * 13 + 20;
+        const tx = s.x > 820 ? s.x - lw - 10 : s.x + 14;
+        const ty = s.y > 670 ? s.y - 18 : s.y - 14;
         return (
           <g>
-            <rect x={tx - 5} y={ty - 16} width={lw} height={22}
-              rx={7} fill="rgba(6,10,20,0.92)" stroke={color} strokeWidth="1.3" />
-            <text x={tx} y={ty} fill={color} fontSize="13.5"
-              fontFamily="'Noto Sans KR', sans-serif" fontWeight="700"
-              style={{ filter: `drop-shadow(0 0 7px ${color})` }}>
+            <rect x={tx - 6} y={ty - 17} width={lw} height={23}
+              rx={8} ry={8}
+              fill="#fff"
+              stroke={color} strokeWidth="1.5"
+              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))' }}
+            />
+            <text x={tx} y={ty} fill={color} fontSize="13"
+              fontFamily="'마루 부리', 'MaruBuri', serif" fontWeight="700">
               {s.name}역
             </text>
           </g>

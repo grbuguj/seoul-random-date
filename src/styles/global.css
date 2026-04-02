@@ -1,39 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/maruburi@0.1.0/index.css');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:        #0e1218;
-  --surface:   #161d26;
-  --card:      #1e2730;
-  --border:    #2a3545;
-  --text:      #f0f4f8;
-  --muted:     #6a8098;
-  --pink:      #ff7eb3;
-  --pink-soft: #ffb3d1;
-  --green:     #4caf82;
-  --blue:      #4dabf7;
-  --radius:    16px;
+  --bg:          #fff5f8;
+  --surface:     #ffffff;
+  --border:      #f0c6d4;
+  --text:        #2d1520;
+  --muted:       #a07080;
+  --pink:        #e8578a;
+  --pink-mid:    #f08caf;
+  --pink-light:  #fce8f0;
+  --pink-soft:   #fff0f5;
+  --radius:      18px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: '마루 부리', 'MaruBuri', serif;
   -webkit-font-smoothing: antialiased;
-  /* 봄 그라디언트 배경 */
+  min-height: 100vh;
   background-image:
-    radial-gradient(ellipse at 20% 20%, rgba(255,126,179,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(77,171,247,0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(76,175,130,0.04) 0%, transparent 60%);
+    radial-gradient(ellipse at 20% 0%,   rgba(255,182,203,0.30) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(255,160,190,0.20) 0%, transparent 50%);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
+@keyframes pulse-soft {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.7; }
+  50%       { opacity: 0.75; }
+}
+
+@keyframes resultPop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
+  18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+  28%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  72%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
 }
