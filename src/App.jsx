@@ -190,7 +190,7 @@ export default function App() {
           호선을 고르고 뽑기 — 오늘의 데이트 장소를 결정해봐요 💕
         </p>
         <div style={{ marginTop: 8, fontSize: 11, color: 'var(--pink-mid)', fontWeight: 600 }}>
-          나의 닉네임: {nickname} 🐾
+          우리의 이름: {nickname} 🐾
         </div>
       </div>
 

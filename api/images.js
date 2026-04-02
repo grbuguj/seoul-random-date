@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = `https://openapi.naver.com/v1/search/image?query=${encodeURIComponent(query)}&display=4&filter=large`;
+    const url = `https://openapi.naver.com/v1/search/image?query=${encodeURIComponent(query)}&display=3&filter=large`;
     const response = await fetch(url, {
       headers: {
         'X-Naver-Client-Id':     clientId,

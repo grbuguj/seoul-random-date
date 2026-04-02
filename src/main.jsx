@@ -1,7 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// index.css는 global.css로 대체
 import App from './App.jsx'
+
+// 카카오 SDK 초기화
+if (window.Kakao && !window.Kakao.isInitialized()) {
+  window.Kakao.init(import.meta.env.VITE_KAKAO_APP_KEY);
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
