@@ -14,7 +14,7 @@ export function useSpinAnimation() {
   const [result, setResult]           = useState(null);
   const timerRef = useRef(null);
 
-  const spin = useCallback((selectedLine) => {
+  const spin = useCallback((selectedLine, durationMs = 10000) => {
     if (spinning) return;
     setSpinning(true);
     setResult(null);
@@ -23,6 +23,8 @@ export function useSpinAnimation() {
     if (selectedLine === 'rand') {
       const target = ALL_STATIONS[Math.floor(Math.random() * ALL_STATIONS.length)];
       const TOTAL  = 36;
+      // rand 모드 자연 길이 ≈ 7000ms → 사용자 지정 duration으로 스케일
+      const scale  = durationMs / 7000;
       let step     = 0;
 
       const tick = () => {
@@ -32,7 +34,7 @@ export function useSpinAnimation() {
           const progress = step / TOTAL;
           playSpinTick(progress);
           step++;
-          const delay = 55 + Math.pow(progress, 2.4) * 480;
+          const delay = (55 + Math.pow(progress, 2.4) * 480) * scale;
           timerRef.current = setTimeout(tick, delay);
         } else {
           setHighlighted({ lineKey: target.lineKey, stationIdx: target.stationIdx });
@@ -54,6 +56,9 @@ export function useSpinAnimation() {
       LOOPS * coords.length +
       ((targetIdx - startIdx + coords.length) % coords.length);
 
+    // 특정 호선: 평균 딜레이 ≈ 200ms/step → 사용자 지정 duration으로 스케일
+    const scale = durationMs / (totalSteps * 200);
+
     let step = 0;
     const tick = () => {
       const idx = (startIdx + step) % coords.length;
@@ -69,7 +74,7 @@ export function useSpinAnimation() {
       const progress = step / totalSteps;
       playSpinTick(progress);
       step++;
-      const delay = 60 + Math.pow(progress, 2.5) * 490;
+      const delay = (60 + Math.pow(progress, 2.5) * 490) * scale;
       timerRef.current = setTimeout(tick, delay);
     };
     tick();

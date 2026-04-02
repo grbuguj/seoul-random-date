@@ -1,0 +1,18 @@
+  function handleReset() {
+    playButtonPop();
+    setDestinations([]);
+    setStageIdx(0);
+    setShowReveal(false);
+    setNamesSet(false);
+    rankingPushedRef.current = false;
+    reset();
+  }
+
+  // 개수 변경 시: 뽑기 진행 상태만 리셋, 이름/시작 상태는 유지
+  function resetSpinOnly() {
+    setDestinations([]);
+    setStageIdx(0);
+    setShowReveal(false);
+    rankingPushedRef.current = false;
+    reset();
+  }
