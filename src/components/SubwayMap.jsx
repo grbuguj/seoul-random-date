@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LINES } from '../data/stations';
 import { LINE_COORDS, project } from '../data/mapCoords';
 
@@ -45,7 +46,12 @@ const SEOUL_PATH = `M ${BORDER_PTS.map(([la,ln]) => R(la,ln)).join(' L ')} Z`;
 
 // 노선별 연결 순서 (segments per line)
 const LINE_SEGMENTS = {
-  '1': [['서울역','시청','종각','종로3가','종로5가','동대문','동묘앞','신설동','제기동','청량리','회기','외대앞','신이문','석계','광운대','월계','녹천','창동','방학','도봉','도봉산']],
+  '1': [
+    // 경부선: 금천구청 ↔ 도봉산
+    ['금천구청','독산','가산디지털단지','구로','신도림','영등포','신길','대방','노량진','용산','남영','서울역','시청','종각','종로3가','종로5가','동대문','동묘앞','신설동','제기동','청량리','회기','외대앞','신이문','석계','광운대','월계','녹천','창동','방학','도봉','도봉산'],
+    // 경인선 서울 구간: 구로 ↔ 온수
+    ['구로','구일','개봉','오류동','온수'],
+  ],
   '2': [
     ['시청','을지로입구','을지로3가','을지로4가','동대문역사문화공원','신당','상왕십리','왕십리','한양대','뚝섬','성수','건대입구','구의','강변','잠실나루','잠실','잠실새내','종합운동장','삼성','선릉','역삼','강남','교대','서초','방배','사당','낙성대','서울대입구','봉천','신림','신대방','구로디지털단지','대림','신도림','문래','영등포구청','당산','합정','홍대입구','신촌','이대','아현','충정로','시청'],
     ['성수','용답','신답','용두','신설동'],
@@ -71,8 +77,17 @@ function buildPoints(lk, seg) {
   return seg.map(n => getCoord(lk, n)).filter(Boolean).map(s => `${s.x},${s.y}`).join(' ');
 }
 
-export default function SubwayMap({ selectedLine, highlighted }) {
+export default function SubwayMap({ selectedLine, highlighted, onStationClick }) {
   const activeLine = selectedLine === 'rand' ? null : selectedLine;
+  // 터치/클릭으로 선택한 역 (스핀 애니메이션과 별개)
+  const [touchedStation, setTouchedStation] = useState(null); // { lk, idx }
+
+  function handleStationTouch(lk, idx, name) {
+    setTouchedStation({ lk, idx });
+    onStationClick?.(name, lk);
+    // 2.5초 후 툴팁 사라짐
+    setTimeout(() => setTouchedStation(null), 2500);
+  }
 
   return (
     <svg
@@ -144,22 +159,47 @@ export default function SubwayMap({ selectedLine, highlighted }) {
         const color  = LINES[lk].color;
         const active = !activeLine || activeLine === lk;
         return stations.map((s, idx) => {
-          const hit = highlighted?.lineKey === lk && highlighted?.stationIdx === idx;
+          const hit     = highlighted?.lineKey === lk && highlighted?.stationIdx === idx;
+          const touched = touchedStation?.lk === lk && touchedStation?.idx === idx;
           return (
             <circle key={`${lk}-${idx}`}
               cx={s.x} cy={s.y}
-              r={hit ? 9 : active ? 3.2 : 1.6}
-              fill={hit ? color : active ? '#fff' : '#e8c4cc'}
-              stroke={hit ? '#fff' : active ? color : '#d4a0b0'}
-              strokeWidth={hit ? 2.5 : active ? 1.2 : 0.5}
+              r={hit ? 9 : touched ? 7 : active ? 3.2 : 1.6}
+              fill={hit || touched ? color : active ? '#fff' : '#e8c4cc'}
+              stroke={hit || touched ? '#fff' : active ? color : '#d4a0b0'}
+              strokeWidth={hit ? 2.5 : touched ? 2 : active ? 1.2 : 0.5}
               opacity={active ? 1 : 0.22}
-              style={hit ? {
-                filter: `drop-shadow(0 0 8px ${color}bb) drop-shadow(0 0 18px ${color}66)`,
-              } : undefined}
+              style={{
+                cursor: active ? 'pointer' : 'default',
+                ...(hit ? { filter: `drop-shadow(0 0 8px ${color}bb) drop-shadow(0 0 18px ${color}66)` } : {}),
+                ...(touched ? { filter: `drop-shadow(0 0 6px ${color}99)` } : {}),
+              }}
+              onClick={() => active && handleStationTouch(lk, idx, s.name)}
+              onTouchStart={(e) => { e.preventDefault(); active && handleStationTouch(lk, idx, s.name); }}
             />
           );
         });
       })}
+
+      {/* 터치 선택 역 툴팁 */}
+      {touchedStation && (() => {
+        const s     = LINE_COORDS[touchedStation.lk]?.[touchedStation.idx];
+        const color = LINES[touchedStation.lk]?.color;
+        if (!s) return null;
+        const lw = s.name.length * 13 + 20;
+        const tx = s.x > 820 ? s.x - lw - 10 : s.x + 14;
+        const ty = s.y < 80 ? s.y + 28 : s.y - 14;
+        return (
+          <g style={{ pointerEvents: 'none' }}>
+            <rect x={tx - 6} y={ty - 17} width={lw} height={23}
+              rx={8} ry={8} fill={color} />
+            <text x={tx} y={ty} fill="#fff" fontSize="13"
+              fontFamily="'마루 부리', 'MaruBuri', serif" fontWeight="700">
+              {s.name}역
+            </text>
+          </g>
+        );
+      })()}
 
       {/* 하이라이트 역명 레이블 */}
       {highlighted && (() => {

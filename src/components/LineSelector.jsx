@@ -1,4 +1,5 @@
 import { LINES } from '../data/stations';
+import { playLineSelect } from '../utils/sounds';
 
 const BUTTONS = [
   { key: 'rand', label: '🎲', title: '완전 랜덤', color: null },
@@ -16,7 +17,7 @@ export default function LineSelector({ selected, onChange }) {
           <button
             key={key}
             title={title}
-            onClick={() => onChange(key)}
+            onClick={() => { playLineSelect(key); onChange(key); }}
             style={{
               width: 34,
               height: 34,
