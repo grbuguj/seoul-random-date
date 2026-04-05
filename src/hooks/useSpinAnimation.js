@@ -14,14 +14,16 @@ export function useSpinAnimation() {
   const [result, setResult]           = useState(null);
   const timerRef = useRef(null);
 
-  const spin = useCallback((selectedLine, durationMs = 10000) => {
+  const spin = useCallback((selectedLine, durationMs = 10000, forceTarget = null) => {
     if (spinning) return;
     setSpinning(true);
     setResult(null);
     playSpinStart();
 
     if (selectedLine === 'rand') {
-      const target = ALL_STATIONS[Math.floor(Math.random() * ALL_STATIONS.length)];
+      const target = forceTarget
+        ? ALL_STATIONS.find(s => s.lineKey === forceTarget.lineKey && s.name === forceTarget.stationName) ?? ALL_STATIONS[Math.floor(Math.random() * ALL_STATIONS.length)]
+        : ALL_STATIONS[Math.floor(Math.random() * ALL_STATIONS.length)];
       const TOTAL  = 36;
       // rand 모드 자연 길이 ≈ 7000ms → 사용자 지정 duration으로 스케일
       const scale  = durationMs / 7000;
@@ -49,7 +51,9 @@ export function useSpinAnimation() {
 
     const lineKey   = selectedLine;
     const coords    = LINE_COORDS[lineKey];
-    const targetIdx = Math.floor(Math.random() * coords.length);
+    const targetIdx = forceTarget
+      ? Math.max(0, coords.findIndex(s => s.name === forceTarget.stationName))
+      : Math.floor(Math.random() * coords.length);
     const startIdx  = Math.floor(Math.random() * coords.length);
     const LOOPS     = 3;
     const totalSteps =

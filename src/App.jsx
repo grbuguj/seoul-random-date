@@ -13,6 +13,12 @@ import { getOrCreateNickname } from './utils/nickname';
 import { playButtonPop, playCoupleReveal } from './utils/sounds';
 import { getCompatibilityScore } from './data/coupleFortuneTexts';
 
+// 주작 모드: 순서대로 결과 고정 (비워두면 랜덤)
+const CHEAT_RESULTS = [
+  { lineKey: '5', stationName: '오목교' },
+  { lineKey: '2', stationName: '문래' },
+];
+
 const DEST_CONFIG = {
   1: [{ label: null, labelEmoji: null, labelColor: null }],
   2: [
@@ -126,7 +132,8 @@ export default function App() {
   // 핸들러
   function triggerSpin() {
     setIsMapFullscreen(true);
-    spin(selectedLine, spinDuration * 1000);
+    const cheat = CHEAT_RESULTS[stageIdx] ?? null;
+    spin(selectedLine, spinDuration * 1000, cheat);
   }
 
   // 완전 리셋 (다시 뽑기 버튼용) — namesSet도 초기화
