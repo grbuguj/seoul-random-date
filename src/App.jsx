@@ -15,8 +15,6 @@ import { getCompatibilityScore } from './data/coupleFortuneTexts';
 
 // 주작 모드: 순서대로 결과 고정 (비워두면 랜덤)
 const CHEAT_RESULTS = [
-  { lineKey: '5', stationName: '오목교' },
-  { lineKey: '2', stationName: '문래' },
 ];
 
 const DEST_CONFIG = {
