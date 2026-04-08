@@ -12,6 +12,7 @@ import { useFeed, useRankings, useStationCounts } from './hooks/useFeed';
 import { getOrCreateNickname } from './utils/nickname';
 import { playButtonPop, playCoupleReveal } from './utils/sounds';
 import { getCompatibilityScore } from './data/coupleFortuneTexts';
+import { recordVisit } from './utils/visit';
 
 // 주작 모드: 순서대로 결과 고정 (비워두면 랜덤)
 const CHEAT_RESULTS = [
@@ -45,6 +46,9 @@ const destDesc = {
 export default function App() {
   const [selectedLine, setSelectedLine] = useState('rand');
   const [history, setHistory]           = useState([]);
+
+  // 방문 기록 (세션당 1회)
+  useEffect(() => { recordVisit(); }, []);
 
   // 이름
   const [nameA, setNameA] = useState('');
